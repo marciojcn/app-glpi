@@ -6,7 +6,7 @@ e [SemVer](https://semver.org/lang/pt-BR/).
 ## [1.0.0] - 2026-05-29
 
 ### Adicionado
-- Projeto Flutter (Android) inicial no padrão JCN para a **API REST v2** do GLPI.
+- Projeto Flutter (Android) inicial no padrão Unifeob para a **API REST v2** do GLPI.
 - Autenticação **OAuth2** (grant `password`) com renovação por `refresh_token`
   e configuração do client OAuth (URL, Client ID/Secret, scope) em armazenamento
   seguro.

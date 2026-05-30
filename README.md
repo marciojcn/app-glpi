@@ -4,20 +4,16 @@ App **Flutter (Android)** com a **identidade visual da Unifeob** para consulta d
 inventário do GLPI pela **API REST v2 (High-Level, OAuth2)** e impressão de
 **etiquetas com QR code** em impressora térmica **Bluetooth** (TSPL).
 
-É a reescrita do cliente GLPI da casa para a **API nova** — o projeto anterior
-usava a API legada (`apirest.php`, App-Token + Session-Token). Esta entrega cobre
-**dois inventários**: **Computadores** e **Celulares**.
-
 ---
 
 ## Funcionalidades
 
-- 🔐 **Login OAuth2** (grant `password`) contra o GLPI v2, com renovação por
+- **Login OAuth2** (grant `password`) contra o GLPI v2, com renovação por
   `refresh_token`.
-- 💻📱 **Inventário de Computadores e Celulares**: lista paginada com scroll
+- **Inventário de Computadores e Celulares**: lista paginada com scroll
   infinito, busca por nome/serial/patrimônio (filtro RSQL no servidor) e tela de
   detalhe completa.
-- 🏷️ **Etiqueta com QR code via Bluetooth** (TSPL — XD210, Zebra GK, XPrinter…),
+- **Etiqueta com QR code via Bluetooth** (TSPL — XD210, Zebra GK, XPrinter…),
   com layout configurável (dimensões, campos, cópias). Fallback: gerar/compartilhar
   **PDF** no mesmo tamanho.
 
@@ -88,7 +84,7 @@ lib/
     ├── models/               # asset, asset_tipo, auth_config, auth_token, label_config
     ├── services/             # glpi_api, auth_service, asset_service, label_print_service
     ├── pages/                # login, home, inventory/{list,detail}, etiqueta, settings
-    └── widgets/              # design system Glpi* + tema/identidade JCN
+    └── widgets/              # design system Glpi* + tema/identidade Unifeob
 ```
 
 - **Identificadores em PT-BR**; camadas claras (UI nunca fala HTTP direto — sempre
