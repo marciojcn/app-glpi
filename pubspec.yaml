@@ -1,0 +1,57 @@
+name: app_glpi
+description: "Inventário Unifeob — Cliente Flutter da API REST v2 (High-Level OAuth2) do GLPI."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # ── UI / Branding ──
+  flutter_svg: ^2.0.10   # Renderiza a logo Unifeob (vetor) na UI
+
+  # ── HTTP / Persistência ──
+  http: ^1.2.2
+  shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.4   # client_secret + tokens OAuth no Android KeyStore
+
+  # ── Permissões (Bluetooth em runtime — Android 12+) ──
+  permission_handler: ^11.3.1
+
+  # ── Scanner de QR code / código de barras (câmera) ──
+  mobile_scanner: ^7.0.0
+
+  # ── Impressão de etiquetas (Bluetooth TSPL + PDF + QR) ──
+  blue_thermal_printer: ^1.2.3   # Bluetooth (XD210, Zebra GK em modo TSPL)
+  pdf: ^3.11.1                   # Gerador de PDF da etiqueta
+  printing: ^5.13.4             # Diálogo nativo de impressão / compartilhar PDF
+  barcode_widget: ^2.0.4         # Preview do QR no app
+  image: ^4.5.0                  # Decodifica PNG e gera bitmap mono TSPL p/ logo
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/sounds/
+
+# ── Gerador de ícones do launcher ─────────────────────────────────────────
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 24
+  adaptive_icon_background: "#241C84"
+  adaptive_icon_foreground: "assets/images/unifeob_icon_fg.png"
+  adaptive_icon_foreground_inset: 0

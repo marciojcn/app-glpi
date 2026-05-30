@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Permite tráfego HTTP em texto puro (cleartext).
+
+  O servidor GLPI desta atividade roda em HTTP (ex.: http://137.131.162.82:8080),
+  e o Android 9+ bloqueia cleartext por padrão. Para produção, o ideal é expor o
+  GLPI por HTTPS e remover este arquivo (ou restringir o domínio abaixo).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>
