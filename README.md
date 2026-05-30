@@ -77,7 +77,7 @@ campos selecionados. Sem impressora à mão, use **PDF** ou **Compartilhar**.
 
 ---
 
-## Arquitetura (padrão JCN)
+## Arquitetura (Professor Nivaldo)
 
 ```
 lib/
@@ -126,4 +126,4 @@ gerados a partir dela.
 
 ---
 
-Projeto customizado para a **Unifeob** · desenvolvido pelo Grupo JCN.
+Projeto customizado para a **Unifeob** · desenvolvido por Márcio Augusto Garcia Soares · RA: 24000138.
