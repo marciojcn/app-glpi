@@ -3,15 +3,9 @@ import 'package:flutter/services.dart';
 
 import 'glpi_theme.dart';
 
-/// Animação de press (escala 0.95→1.0) sem interceptar gestos.
-///
-/// Usa [Listener] em vez de [GestureDetector] porque o botão Material interno
-/// já tem seu próprio reconhecedor de toque — um `GestureDetector` externo
-/// perderia a arena e o `onTap` do filho consumiria o evento. `Listener`
-/// apenas observa eventos de ponteiro e não compete na arena.
 class _PressFeedback extends StatefulWidget {
   final Widget child;
-  final bool   enabled;
+  final bool enabled;
 
   const _PressFeedback({required this.child, this.enabled = true});
 
@@ -30,37 +24,34 @@ class _PressFeedbackState extends State<_PressFeedback> {
   @override
   Widget build(BuildContext context) {
     return Listener(
-      onPointerDown:   (_) => _set(true),
-      onPointerUp:     (_) => _set(false),
+      onPointerDown: (_) => _set(true),
+      onPointerUp: (_) => _set(false),
       onPointerCancel: (_) => _set(false),
       child: AnimatedScale(
-        scale:    _pressed ? 0.95 : 1,
+        scale: _pressed ? 0.95 : 1,
         duration: const Duration(milliseconds: 80),
-        curve:    Curves.easeOut,
-        child:    widget.child,
+        curve: Curves.easeOut,
+        child: widget.child,
       ),
     );
   }
 }
 
-// ─── Primário ─────────────────────────────────────────────────────────────
-
-/// Botão primário (ElevatedButton). Suporta loading com spinner.
 class GlpiButton extends StatelessWidget {
-  final String        label;
-  final IconData?     icon;
-  final bool          loading;
-  final Color?        backgroundColor;
-  final double        height;
+  final String label;
+  final IconData? icon;
+  final bool loading;
+  final Color? backgroundColor;
+  final double height;
   final VoidCallback? onPressed;
 
   const GlpiButton({
     super.key,
     required this.label,
     this.icon,
-    this.loading         = false,
+    this.loading = false,
     this.backgroundColor,
-    this.height          = GlpiTheme.buttonHeight,
+    this.height = GlpiTheme.buttonHeight,
     required this.onPressed,
   });
 
@@ -72,7 +63,7 @@ class GlpiButton extends StatelessWidget {
       enabled: !desabilitado,
       child: SizedBox(
         height: height,
-        width:  double.infinity,
+        width: double.infinity,
         child: ElevatedButton(
           onPressed: desabilitado
               ? null
@@ -88,12 +79,15 @@ class GlpiButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(GlpiTheme.borderRadius),
             ),
-            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            textStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           ),
           child: loading
               ? const SizedBox(
-                  height: 22, width: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2.4, color: Colors.white),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -111,13 +105,11 @@ class GlpiButton extends StatelessWidget {
   }
 }
 
-// ─── Outlined ─────────────────────────────────────────────────────────────
-
 class GlpiOutlinedButton extends StatelessWidget {
-  final String        label;
-  final IconData?     icon;
-  final Color?        foregroundColor;
-  final double        height;
+  final String label;
+  final IconData? icon;
+  final Color? foregroundColor;
+  final double height;
   final VoidCallback? onPressed;
 
   const GlpiOutlinedButton({
@@ -137,7 +129,7 @@ class GlpiOutlinedButton extends StatelessWidget {
       enabled: onPressed != null,
       child: SizedBox(
         height: height,
-        width:  double.infinity,
+        width: double.infinity,
         child: OutlinedButton(
           onPressed: onPressed == null
               ? null
@@ -147,11 +139,12 @@ class GlpiOutlinedButton extends StatelessWidget {
                 },
           style: OutlinedButton.styleFrom(
             foregroundColor: cor,
-            side:            BorderSide(color: cor, width: 1.4),
+            side: BorderSide(color: cor, width: 1.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(GlpiTheme.borderRadius),
             ),
-            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            textStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -169,12 +162,10 @@ class GlpiOutlinedButton extends StatelessWidget {
   }
 }
 
-// ─── Destrutivo ───────────────────────────────────────────────────────────
-
 class GlpiDestructiveButton extends StatelessWidget {
-  final String        label;
-  final IconData?     icon;
-  final double        height;
+  final String label;
+  final IconData? icon;
+  final double height;
   final VoidCallback? onPressed;
 
   const GlpiDestructiveButton({
@@ -188,21 +179,19 @@ class GlpiDestructiveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlpiOutlinedButton(
-      label:           label,
-      icon:            icon,
-      height:          height,
+      label: label,
+      icon: icon,
+      height: height,
       foregroundColor: GlpiTheme.glpiError,
-      onPressed:       onPressed,
+      onPressed: onPressed,
     );
   }
 }
 
-// ─── Texto ────────────────────────────────────────────────────────────────
-
 class GlpiTextButton extends StatelessWidget {
-  final String        label;
-  final IconData?     icon;
-  final Color?        color;
+  final String label;
+  final IconData? icon;
+  final Color? color;
   final VoidCallback? onPressed;
 
   const GlpiTextButton({
@@ -226,7 +215,7 @@ class GlpiTextButton extends StatelessWidget {
               },
         style: TextButton.styleFrom(
           foregroundColor: color ?? GlpiTheme.glpiPrimary,
-          padding:         const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

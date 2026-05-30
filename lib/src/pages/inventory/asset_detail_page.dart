@@ -9,11 +9,9 @@ import '../../services/asset_service.dart';
 import '../../widgets/widgets.dart';
 import '../etiqueta_page.dart';
 
-/// Detalhe de um ativo. Recebe o resumo vindo da lista e busca os campos
-/// completos por id; enquanto carrega, já exibe o que tem em mãos.
 class AssetDetailPage extends StatefulWidget {
   final AssetTipo tipo;
-  final Asset     asset;
+  final Asset asset;
   const AssetDetailPage({super.key, required this.tipo, required this.asset});
 
   @override
@@ -54,8 +52,6 @@ class _AssetDetailPageState extends State<AssetDetailPage> {
     Navigator.push(context, transicaoPadrao(EtiquetaPage(asset: _asset)));
   }
 
-  // ── Build ───────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final a = _asset;
@@ -64,70 +60,70 @@ class _AssetDetailPageState extends State<AssetDetailPage> {
       body: SafeArea(
         child: Column(
           children: [
-            if (_carregando) const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: GlpiLinearLoading(),
-            ),
+            if (_carregando)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: GlpiLinearLoading(),
+              ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
                   GlpiAssetHeaderCard(
-                    nome:        a.titulo,
-                    tipo:        widget.tipo.rotuloSingular,
-                    serial:      a.serial,
-                    status:      a.estado,
+                    nome: a.titulo,
+                    tipo: widget.tipo.rotuloSingular,
+                    serial: a.serial,
+                    status: a.estado,
                     localizacao: a.localizacao,
-                    usuario:     a.usuario,
+                    usuario: a.usuario,
                     icone: widget.tipo == AssetTipo.computador
                         ? Icons.computer_rounded
                         : Icons.smartphone_rounded,
                   ),
                   GlpiSectionCard(
                     titulo: 'Identificação',
-                    icone:  Icons.badge_outlined,
+                    icone: Icons.badge_outlined,
                     linhas: [
-                      GlpiDetailRow('Nome',       a.nome, destaque: true),
-                      GlpiDetailRow('Serial',     a.serial),
+                      GlpiDetailRow('Nome', a.nome, destaque: true),
+                      GlpiDetailRow('Serial', a.serial),
                       GlpiDetailRow('Inventário', a.inventario),
-                      GlpiDetailRow('Tipo',       a.tipoEquipamento),
-                      GlpiDetailRow('Modelo',     a.modelo),
+                      GlpiDetailRow('Tipo', a.tipoEquipamento),
+                      GlpiDetailRow('Modelo', a.modelo),
                       GlpiDetailRow('Fabricante', a.fabricante),
                     ],
                   ),
                   GlpiSectionCard(
                     titulo: 'Alocação',
-                    icone:  Icons.place_outlined,
+                    icone: Icons.place_outlined,
                     linhas: [
-                      GlpiDetailRow('Usuário',      a.usuario),
+                      GlpiDetailRow('Usuário', a.usuario),
                       GlpiDetailRow('Departamento', a.grupo),
-                      GlpiDetailRow('Localização',  a.localizacao),
-                      GlpiDetailRow('Estado',       a.estado),
-                      GlpiDetailRow('Entidade',     a.entidade),
+                      GlpiDetailRow('Localização', a.localizacao),
+                      GlpiDetailRow('Estado', a.estado),
+                      GlpiDetailRow('Entidade', a.entidade),
                     ],
                   ),
                   if (a.uuid.isNotEmpty || a.sistemaOperacional.isNotEmpty)
                     GlpiSectionCard(
                       titulo: 'Sistema',
-                      icone:  Icons.memory_rounded,
+                      icone: Icons.memory_rounded,
                       linhas: [
                         if (a.sistemaOperacional.isNotEmpty)
                           GlpiDetailRow('S.O.', a.sistemaOperacional),
-                        if (a.uuid.isNotEmpty)
-                          GlpiDetailRow('UUID', a.uuid),
+                        if (a.uuid.isNotEmpty) GlpiDetailRow('UUID', a.uuid),
                       ],
                     ),
                   if (a.comentario.isNotEmpty)
                     GlpiSectionCard(
                       titulo: 'Observações',
-                      icone:  Icons.notes_rounded,
+                      icone: Icons.notes_rounded,
                       linhas: [GlpiDetailRow('Comentário', a.comentario)],
                     ),
                   GlpiSectionCard(
                     titulo: 'Datas',
-                    icone:  Icons.event_outlined,
+                    icone: Icons.event_outlined,
                     linhas: [
-                      GlpiDetailRow('Criação',     _fmtData(a.dataCriacao)),
+                      GlpiDetailRow('Criação', _fmtData(a.dataCriacao)),
                       GlpiDetailRow('Modificação', _fmtData(a.dataModificacao)),
                     ],
                   ),
@@ -149,8 +145,8 @@ class _AssetDetailPageState extends State<AssetDetailPage> {
         border: Border(top: BorderSide(color: GlpiTheme.glpiBorderLight)),
       ),
       child: GlpiButton(
-        label:     'IMPRIMIR ETIQUETA',
-        icon:      Icons.qr_code_2_rounded,
+        label: 'IMPRIMIR ETIQUETA',
+        icon: Icons.qr_code_2_rounded,
         onPressed: _imprimir,
       ),
     );

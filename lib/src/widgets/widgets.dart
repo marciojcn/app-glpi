@@ -1,5 +1,3 @@
-/// Barrel export do design system. Toda página importa com uma linha:
-/// `import '../widgets/widgets.dart';`
 library;
 
 export 'glpi_button.dart';

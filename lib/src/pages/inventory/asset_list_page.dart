@@ -11,11 +11,6 @@ import '../../widgets/widgets.dart';
 import 'asset_detail_page.dart';
 import 'qr_scanner_page.dart';
 
-/// Lista paginada de ativos de um [AssetTipo] (computador ou celular).
-///
-/// Genérica: a mesma tela serve aos dois inventários, mudando só o [tipo].
-/// Tem busca textual (filtro RSQL no servidor), scroll infinito e
-/// pull-to-refresh.
 class AssetListPage extends StatefulWidget {
   final AssetTipo tipo;
   const AssetListPage({super.key, required this.tipo});
@@ -25,19 +20,19 @@ class AssetListPage extends StatefulWidget {
 }
 
 class _AssetListPageState extends State<AssetListPage> {
-  final _buscaCtrl  = TextEditingController();
+  final _buscaCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
 
   static const int _limit = GlpiConstants.paginaTamanhoPadrao;
 
   final List<Asset> _itens = [];
-  int    _total             = 0;
-  bool   _carregandoInicial = true;
-  bool   _carregandoMais    = false;
-  bool   _ultimaPaginaCheia = false;
-  bool   _erro              = false;
-  String _mensagemErro      = '';
-  String _busca             = '';
+  int _total = 0;
+  bool _carregandoInicial = true;
+  bool _carregandoMais = false;
+  bool _ultimaPaginaCheia = false;
+  bool _erro = false;
+  String _mensagemErro = '';
+  String _busca = '';
 
   bool get _temMais => _ultimaPaginaCheia;
 
@@ -54,8 +49,6 @@ class _AssetListPageState extends State<AssetListPage> {
     _buscaCtrl.dispose();
     super.dispose();
   }
-
-  // ── Dados ───────────────────────────────────────────────────────────────
 
   void _onScroll() {
     if (_scrollCtrl.position.pixels >=
@@ -78,7 +71,8 @@ class _AssetListPageState extends State<AssetListPage> {
     await _carregarPagina();
   }
 
-  Future<void> _carregarPagina({bool reset = false, bool abrirSeUnico = false}) async {
+  Future<void> _carregarPagina(
+      {bool reset = false, bool abrirSeUnico = false}) async {
     final start = reset ? 0 : _itens.length;
     try {
       final pagina = await AssetService.listar(
@@ -91,32 +85,32 @@ class _AssetListPageState extends State<AssetListPage> {
       setState(() {
         if (reset) _itens.clear();
         _itens.addAll(pagina.itens);
-        _total             = pagina.total;
+        _total = pagina.total;
         _ultimaPaginaCheia = pagina.itens.length >= _limit;
         _carregandoInicial = false;
-        _carregandoMais    = false;
-        _erro              = false;
+        _carregandoMais = false;
+        _erro = false;
       });
-      // Vindo do scanner: se a busca caiu em exatamente 1 item, abre o detalhe.
+
       if (reset && abrirSeUnico && _itens.length == 1) {
         _abrirDetalhe(_itens.first);
       }
     } on GlpiException catch (e) {
       if (!mounted) return;
       setState(() {
-        _erro              = true;
-        _mensagemErro      = e.mensagem;
+        _erro = true;
+        _mensagemErro = e.mensagem;
         _carregandoInicial = false;
-        _carregandoMais    = false;
+        _carregandoMais = false;
       });
     } catch (e) {
       if (kDebugMode) debugPrint('AssetListPage._carregarPagina: $e');
       if (!mounted) return;
       setState(() {
-        _erro              = true;
-        _mensagemErro      = 'Não foi possível carregar a lista.';
+        _erro = true;
+        _mensagemErro = 'Não foi possível carregar a lista.';
         _carregandoInicial = false;
-        _carregandoMais    = false;
+        _carregandoMais = false;
       });
     }
   }
@@ -126,8 +120,6 @@ class _AssetListPageState extends State<AssetListPage> {
     _recarregar(abrirSeUnico: abrirSeUnico);
   }
 
-  /// Abre o scanner; o QR lido vira o termo de busca. Se cair em 1 resultado,
-  /// abre o detalhe automaticamente (mesmo fluxo do STOX).
   Future<void> _abrirScanner() async {
     final codigo = await Navigator.push<String>(
       context,
@@ -139,20 +131,18 @@ class _AssetListPageState extends State<AssetListPage> {
     );
     if (codigo == null || codigo.trim().isEmpty || !mounted) return;
 
-    // QR nativo do GLPI ("URL do ativo") → abre o ativo direto pelo id.
     final ref = AssetService.parseUrlAtivo(codigo);
     if (ref != null) {
       Navigator.push(
         context,
         transicaoPadrao(AssetDetailPage(
-          tipo:  ref.tipo,
+          tipo: ref.tipo,
           asset: Asset.fromJson(<String, dynamic>{'id': ref.id}, ref.tipo),
         )),
       );
       return;
     }
 
-    // QR da nossa etiqueta (hostname) ou texto livre → busca textual.
     _buscaCtrl.text = codigo.trim();
     _buscar(codigo.trim(), abrirSeUnico: true);
   }
@@ -163,8 +153,6 @@ class _AssetListPageState extends State<AssetListPage> {
       transicaoPadrao(AssetDetailPage(tipo: widget.tipo, asset: a)),
     );
   }
-
-  // ── Build ───────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -177,19 +165,21 @@ class _AssetListPageState extends State<AssetListPage> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: GlpiSearchBar(
                 controller: _buscaCtrl,
-                onSearch:   _buscar,
-                onScanner:  _abrirScanner,
+                onSearch: _buscar,
+                onScanner: _abrirScanner,
               ),
             ),
             if (!_carregandoInicial && !_erro && _itens.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     '${_itens.length} de $_total',
                     style: const TextStyle(
-                      fontSize: 12, color: GlpiTheme.glpiTextSecondary,
+                      fontSize: 12,
+                      color: GlpiTheme.glpiTextSecondary,
                     ),
                   ),
                 ),
@@ -207,39 +197,41 @@ class _AssetListPageState extends State<AssetListPage> {
     }
     if (_erro) {
       return _estado(
-        icone:    Icons.cloud_off_rounded,
-        titulo:   'Erro ao carregar',
+        icone: Icons.cloud_off_rounded,
+        titulo: 'Erro ao carregar',
         mensagem: _mensagemErro,
-        acao:     _recarregar,
+        acao: _recarregar,
       );
     }
     if (_itens.isEmpty) {
       return _estado(
-        icone:    Icons.inventory_2_outlined,
-        titulo:   'Nada encontrado',
+        icone: Icons.inventory_2_outlined,
+        titulo: 'Nada encontrado',
         mensagem: _busca.isEmpty
             ? 'Nenhum ${widget.tipo.rotuloSingular.toLowerCase()} cadastrado.'
             : 'Nenhum resultado para "$_busca".',
-        acao:     _recarregar,
+        acao: _recarregar,
       );
     }
 
     return RefreshIndicator(
-      color:     GlpiTheme.glpiPrimary,
+      color: GlpiTheme.glpiPrimary,
       onRefresh: _recarregar,
       child: ListView.builder(
         controller: _scrollCtrl,
-        padding:    const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        itemCount:  _itens.length + (_temMais ? 1 : 0),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        itemCount: _itens.length + (_temMais ? 1 : 0),
         itemBuilder: (_, i) {
           if (i >= _itens.length) {
             return const Padding(
               padding: EdgeInsets.all(16),
               child: Center(
                 child: SizedBox(
-                  height: 26, width: 26,
+                  height: 26,
+                  width: 26,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.6, color: GlpiTheme.glpiPrimary,
+                    strokeWidth: 2.6,
+                    color: GlpiTheme.glpiPrimary,
                   ),
                 ),
               ),
@@ -253,8 +245,8 @@ class _AssetListPageState extends State<AssetListPage> {
 
   Widget _itemCard(Asset a) {
     final infos = <String>[
-      if (a.serial.isNotEmpty)      'S/N ${a.serial}',
-      if (a.usuario.isNotEmpty)     a.usuario,
+      if (a.serial.isNotEmpty) 'S/N ${a.serial}',
+      if (a.usuario.isNotEmpty) a.usuario,
       if (a.localizacao.isNotEmpty) a.localizacao,
     ];
 
@@ -278,7 +270,8 @@ class _AssetListPageState extends State<AssetListPage> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                     color: GlpiTheme.glpiTextPrimary,
                   ),
                 ),
@@ -289,7 +282,8 @@ class _AssetListPageState extends State<AssetListPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 12, color: GlpiTheme.glpiTextSecondary,
+                      fontSize: 12,
+                      color: GlpiTheme.glpiTextSecondary,
                     ),
                   ),
                 ],
@@ -298,16 +292,17 @@ class _AssetListPageState extends State<AssetListPage> {
           ),
           if (a.estado.isNotEmpty)
             Container(
-              margin:  const EdgeInsets.only(left: 8),
+              margin: const EdgeInsets.only(left: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color:        GlpiTheme.corDoEstado(a.estado).withAlpha(28),
+                color: GlpiTheme.corDoEstado(a.estado).withAlpha(28),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 a.estado,
                 style: TextStyle(
-                  fontSize: 10, fontWeight: FontWeight.w600,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
                   color: GlpiTheme.corDoEstado(a.estado),
                 ),
               ),
@@ -319,8 +314,8 @@ class _AssetListPageState extends State<AssetListPage> {
 
   Widget _estado({
     required IconData icone,
-    required String   titulo,
-    required String   mensagem,
+    required String titulo,
+    required String mensagem,
     required VoidCallback acao,
   }) {
     return LayoutBuilder(
@@ -339,7 +334,8 @@ class _AssetListPageState extends State<AssetListPage> {
                   Text(
                     titulo,
                     style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w600,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
                       color: GlpiTheme.glpiTextPrimary,
                     ),
                   ),
@@ -348,14 +344,15 @@ class _AssetListPageState extends State<AssetListPage> {
                     mensagem,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 13, color: GlpiTheme.glpiTextSecondary,
+                      fontSize: 13,
+                      color: GlpiTheme.glpiTextSecondary,
                     ),
                   ),
                   const SizedBox(height: 18),
                   GlpiOutlinedButton(
-                    label:     'Tentar novamente',
-                    icon:      Icons.refresh_rounded,
-                    height:    44,
+                    label: 'Tentar novamente',
+                    icon: Icons.refresh_rounded,
+                    height: 44,
                     onPressed: acao,
                   ),
                 ],

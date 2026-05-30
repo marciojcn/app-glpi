@@ -12,12 +12,6 @@ import '../widgets/widgets.dart';
 import 'api_config_page.dart';
 import 'home_page.dart';
 
-/// Tela de login — limpa, só com usuário e senha.
-///
-/// A configuração do servidor (URL + client OAuth) fica numa tela separada
-/// ([ApiConfigPage]), acessível pelo link "Configurações da API". Padrão da
-/// casa (igual ao app STOX): operador vê uma tela enxuta; o setup técnico fica
-/// à parte.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -26,11 +20,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _userCtrl  = TextEditingController();
+  final _userCtrl = TextEditingController();
   final _senhaCtrl = TextEditingController();
 
   bool _carregando = false;
-  bool _configOk   = false;
+  bool _configOk = false;
 
   @override
   void initState() {
@@ -44,8 +38,6 @@ class _LoginPageState extends State<LoginPage> {
     _senhaCtrl.dispose();
     super.dispose();
   }
-
-  // ── Dados ───────────────────────────────────────────────────────────────
 
   Future<void> _carregar() async {
     await AuthService.instance.carregarConfig();
@@ -61,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _abrirConfig() async {
     await Navigator.push(context, transicaoPadrao(const ApiConfigPage()));
-    await _carregar(); // reflete mudanças feitas na configuração
+    await _carregar();
   }
 
   Future<void> _entrar() async {
@@ -72,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
       _abrirConfig();
       return;
     }
-    final user  = _userCtrl.text.trim();
+    final user = _userCtrl.text.trim();
     final senha = _senhaCtrl.text;
     if (user.isEmpty || senha.isEmpty) {
       GlpiSnackbar.aviso(context, 'Informe usuário e senha.');
@@ -98,8 +90,6 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) setState(() => _carregando = false);
     }
   }
-
-  // ── Build ───────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -127,45 +117,43 @@ class _LoginPageState extends State<LoginPage> {
                   const Text(
                     'Entre com seu usuário e senha do GLPI',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: GlpiTheme.glpiTextSecondary),
+                    style: TextStyle(
+                        fontSize: 13, color: GlpiTheme.glpiTextSecondary),
                   ),
                   const SizedBox(height: 36),
-
                   GlpiTextField(
-                    controller:      _userCtrl,
-                    labelText:       'Usuário',
-                    prefixIcon:      Icons.person_outline_rounded,
+                    controller: _userCtrl,
+                    labelText: 'Usuário',
+                    prefixIcon: Icons.person_outline_rounded,
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 16),
                   GlpiPasswordField(
-                    controller:  _senhaCtrl,
+                    controller: _senhaCtrl,
                     onSubmitted: (_) => _entrar(),
                   ),
                   const SizedBox(height: 28),
-
                   GlpiButton(
-                    label:     'ENTRAR',
-                    icon:      Icons.login_rounded,
-                    loading:   _carregando,
+                    label: 'ENTRAR',
+                    icon: Icons.login_rounded,
+                    loading: _carregando,
                     onPressed: _entrar,
                   ),
                   const SizedBox(height: 14),
-
                   Center(
                     child: GlpiTextButton(
-                      label:     'Configurações da API',
-                      icon:      Icons.settings_outlined,
+                      label: 'Configurações da API',
+                      icon: Icons.settings_outlined,
                       onPressed: _abrirConfig,
                     ),
                   ),
                   if (!_configOk) _avisoSemConfig(),
-
                   const SizedBox(height: 20),
                   const Text(
                     'API REST v2 (OAuth2) · Unifeob',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: GlpiTheme.glpiTextDisabled),
+                    style: TextStyle(
+                        fontSize: 12, color: GlpiTheme.glpiTextDisabled),
                   ),
                   SizedBox(height: altura * 0.04),
                 ],
@@ -179,16 +167,17 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _avisoSemConfig() {
     return Container(
-      margin:  const EdgeInsets.only(top: 4),
+      margin: const EdgeInsets.only(top: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color:        GlpiTheme.glpiWarningBackground,
+        color: GlpiTheme.glpiWarningBackground,
         borderRadius: BorderRadius.circular(GlpiTheme.borderRadius),
-        border:       Border.all(color: GlpiTheme.glpiWarning.withAlpha(60)),
+        border: Border.all(color: GlpiTheme.glpiWarning.withAlpha(60)),
       ),
       child: const Row(
         children: [
-          Icon(Icons.info_outline_rounded, size: 18, color: GlpiTheme.glpiWarning),
+          Icon(Icons.info_outline_rounded,
+              size: 18, color: GlpiTheme.glpiWarning),
           SizedBox(width: 8),
           Expanded(
             child: Text(

@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'glpi_theme.dart';
 
-/// Helper de SnackBar padronizado.
-///
-/// - Floating, 12px de raio.
-/// - Sempre 1 por vez (chama `hideCurrentSnackBar` antes).
-/// - Cor depende do tipo: sucesso (verde), erro (vermelho), aviso (laranja),
-///   info (azul).
 class GlpiSnackbar {
   GlpiSnackbar._();
 
@@ -30,7 +24,7 @@ class GlpiSnackbar {
   static void _exibir(
     BuildContext context,
     String mensagem, {
-    required Color    fundo,
+    required Color fundo,
     required IconData icone,
   }) {
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -40,8 +34,8 @@ class GlpiSnackbar {
     messenger.showSnackBar(
       SnackBar(
         backgroundColor: fundo,
-        behavior:        SnackBarBehavior.floating,
-        margin:          const EdgeInsets.all(12),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(GlpiTheme.borderRadius),
         ),

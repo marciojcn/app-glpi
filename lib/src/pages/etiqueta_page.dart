@@ -9,15 +9,10 @@ import '../models/asset.dart';
 import '../models/asset_tipo.dart';
 import '../models/label_config.dart';
 import '../services/asset_service.dart';
+import '../services/glpi_audio.dart';
 import '../services/label_print_service.dart';
 import '../widgets/widgets.dart';
 
-/// Tela de impressão de etiqueta com QR code via impressora Bluetooth.
-///
-/// Mostra um preview da etiqueta, deixa escolher a impressora Bluetooth
-/// pareada, e imprime (TSPL). Como alternativa, gera/compartilha um PDF no
-/// mesmo tamanho. O layout (campos e dimensões) vem de [LabelConfig], editável
-/// em Configurações.
 class EtiquetaPage extends StatefulWidget {
   final Asset asset;
   const EtiquetaPage({super.key, required this.asset});
@@ -29,12 +24,12 @@ class EtiquetaPage extends StatefulWidget {
 class _EtiquetaPageState extends State<EtiquetaPage> {
   final _anydeskCtrl = TextEditingController();
 
-  LabelConfig            _config       = LabelConfig();
-  List<BluetoothDevice>  _impressoras  = [];
-  BluetoothDevice?       _selecionada;
-  bool _conectada            = false;
+  LabelConfig _config = LabelConfig();
+  List<BluetoothDevice> _impressoras = [];
+  BluetoothDevice? _selecionada;
+  bool _conectada = false;
   bool _carregandoImpressoras = false;
-  bool _ocupado              = false;
+  bool _ocupado = false;
 
   @override
   void initState() {
@@ -48,8 +43,6 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
     super.dispose();
   }
 
-  // ── Dados ───────────────────────────────────────────────────────────────
-
   Future<void> _carregar() async {
     _config = await LabelConfig.carregar();
     if (!mounted) return;
@@ -62,8 +55,9 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
       Permission.bluetoothConnect,
       Permission.bluetoothScan,
     ].request();
-    // Em Android < 12 essas permissões já vêm concedidas (install-time).
-    return res.values.every((s) => s.isGranted || s.isLimited || s.isRestricted);
+
+    return res.values
+        .every((s) => s.isGranted || s.isLimited || s.isRestricted);
   }
 
   Future<void> _carregarImpressoras() async {
@@ -72,20 +66,22 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
       final permitido = await _garantirPermissao();
       if (!permitido) {
         if (!mounted) return;
-        GlpiSnackbar.aviso(context, 'Permissão de Bluetooth necessária para imprimir.');
+        GlpiSnackbar.aviso(
+            context, 'Permissão de Bluetooth necessária para imprimir.');
         return;
       }
       if (!await LabelPrintService.bluetoothLigado()) {
         if (!mounted) return;
-        GlpiSnackbar.aviso(context, 'Ligue o Bluetooth para listar impressoras.');
+        GlpiSnackbar.aviso(
+            context, 'Ligue o Bluetooth para listar impressoras.');
       }
-      final lista     = await LabelPrintService.dispositivosPareados();
+      final lista = await LabelPrintService.dispositivosPareados();
       final conectada = await LabelPrintService.bluetoothConectado();
       if (!mounted) return;
       setState(() {
         _impressoras = lista;
         _selecionada ??= lista.isNotEmpty ? lista.first : null;
-        _conectada   = conectada;
+        _conectada = conectada;
       });
     } on GlpiException catch (e) {
       if (!mounted) return;
@@ -100,27 +96,24 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
   AssetLabelData _dados() {
     final a = widget.asset;
     final ehCelular = a.tipo == AssetTipo.celular;
-    // QR = "URL do ativo" do GLPI → ao escanear, abre o item por id (sem
-    // ambiguidade de nome). Cai para o hostname só se o servidor não estiver
-    // configurado.
+
     final urlQr = AssetService.urlAtivo(a.tipo, a.id);
     return AssetLabelData(
-      hostname:     a.nome,
-      usuario:      a.usuario,
+      hostname: a.nome,
+      usuario: a.usuario,
       departamento: a.grupo,
-      // Data do último inventário no padrão BR (dd/MM/aaaa).
-      inventario:   LabelPrintService.formatarDataBR(a.dataInventario),
-      // S/N = etiqueta de serviço (Dell/Lenovo); no celular, cai para o IMEI.
-      serial:       a.serial.isNotEmpty ? a.serial : a.imei,
-      anydesk:      _anydeskCtrl.text.trim(),
-      qrPayload:    urlQr.isNotEmpty ? urlQr : a.qrPayload,
-      rotuloHost:   ehCelular ? 'Nome:' : 'Hostname:',
+      inventario: LabelPrintService.formatarDataBR(a.dataInventario),
+      serial: a.serial.isNotEmpty ? a.serial : a.imei,
+      anydesk: _anydeskCtrl.text.trim(),
+      qrPayload: urlQr.isNotEmpty ? urlQr : a.qrPayload,
+      rotuloHost: ehCelular ? 'Nome:' : 'Hostname:',
     );
   }
 
   Future<void> _imprimirBluetooth() async {
     if (_selecionada == null) {
-      GlpiSnackbar.aviso(context, 'Selecione uma impressora Bluetooth pareada.');
+      GlpiSnackbar.aviso(
+          context, 'Selecione uma impressora Bluetooth pareada.');
       return;
     }
     setState(() => _ocupado = true);
@@ -132,6 +125,7 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
       setState(() => _conectada = true);
       await LabelPrintService.imprimirBluetooth(_dados(), config: _config);
       if (!mounted) return;
+      GlpiAudio.sucesso();
       GlpiSnackbar.sucesso(
         context,
         _config.copiasPorItem > 1
@@ -141,10 +135,12 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
     } on GlpiException catch (e) {
       if (!mounted) return;
       setState(() => _conectada = false);
+      GlpiAudio.erro();
       GlpiSnackbar.erro(context, e.mensagem);
     } catch (e) {
       if (kDebugMode) debugPrint('EtiquetaPage._imprimirBluetooth: $e');
       if (!mounted) return;
+      GlpiAudio.erro();
       GlpiSnackbar.erro(context, 'Falha ao imprimir. Verifique a impressora.');
     } finally {
       if (mounted) setState(() => _ocupado = false);
@@ -177,8 +173,6 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
     }
   }
 
-  // ── Build ───────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,11 +184,11 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
             _preview(),
             const SizedBox(height: 16),
             GlpiTextField(
-              controller:  _anydeskCtrl,
-              labelText:   'ID AnyDesk (opcional)',
-              prefixIcon:  Icons.support_agent_rounded,
+              controller: _anydeskCtrl,
+              labelText: 'ID AnyDesk (opcional)',
+              prefixIcon: Icons.support_agent_rounded,
               keyboardType: TextInputType.number,
-              onChanged:   (_) => setState(() {}),
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
             _cardCopias(),
@@ -202,9 +196,9 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
             _cardImpressora(),
             const SizedBox(height: 20),
             GlpiButton(
-              label:     'IMPRIMIR (BLUETOOTH)',
-              icon:      Icons.print_rounded,
-              loading:   _ocupado,
+              label: 'IMPRIMIR (BLUETOOTH)',
+              icon: Icons.print_rounded,
+              loading: _ocupado,
               onPressed: _ocupado ? null : _imprimirBluetooth,
             ),
             const SizedBox(height: 10),
@@ -212,18 +206,18 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
               children: [
                 Expanded(
                   child: GlpiOutlinedButton(
-                    label:     'PDF',
-                    icon:      Icons.picture_as_pdf_outlined,
-                    height:    46,
+                    label: 'PDF',
+                    icon: Icons.picture_as_pdf_outlined,
+                    height: 46,
                     onPressed: _ocupado ? null : _imprimirPdf,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: GlpiOutlinedButton(
-                    label:     'COMPARTILHAR',
-                    icon:      Icons.share_outlined,
-                    height:    46,
+                    label: 'COMPARTILHAR',
+                    icon: Icons.share_outlined,
+                    height: 46,
                     onPressed: _ocupado ? null : _compartilharPdf,
                   ),
                 ),
@@ -238,11 +232,11 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
   Widget _preview() {
     final d = _dados();
     final linhas = <Widget>[
-      if (_config.mostrarHostname)     _linhaPreview(d.rotuloHost, d.hostname),
-      if (_config.mostrarUsuario)      _linhaPreview('Usuário:', d.usuario),
+      if (_config.mostrarHostname) _linhaPreview(d.rotuloHost, d.hostname),
+      if (_config.mostrarUsuario) _linhaPreview('Usuário:', d.usuario),
       if (_config.mostrarDepartamento) _linhaPreview('Depto.', d.departamento),
-      if (_config.mostrarInventario)   _linhaPreview('Inventário:', d.inventario),
-      if (_config.mostrarSerial)       _linhaPreview('S/N:', d.serial),
+      if (_config.mostrarInventario) _linhaPreview('Inventário:', d.inventario),
+      if (_config.mostrarSerial) _linhaPreview('S/N:', d.serial),
     ];
     final anydesk = d.anydesk;
 
@@ -255,7 +249,7 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              border:       Border.all(color: GlpiTheme.glpiBorderStrong),
+              border: Border.all(color: GlpiTheme.glpiBorderStrong),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Row(
@@ -263,10 +257,10 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
               children: [
                 if (_config.mostrarQrCode) ...[
                   BarcodeWidget(
-                    barcode:  Barcode.qrCode(),
-                    data:     d.qrPayload.isEmpty ? '—' : d.qrPayload,
-                    width:    78,
-                    height:   78,
+                    barcode: Barcode.qrCode(),
+                    data: d.qrPayload.isEmpty ? '—' : d.qrPayload,
+                    width: 78,
+                    height: 78,
                     drawText: false,
                   ),
                   const SizedBox(width: 12),
@@ -274,10 +268,8 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment:  MainAxisAlignment.center,
-                    children: linhas.isEmpty
-                        ? [const Text('—')]
-                        : linhas,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: linhas.isEmpty ? [const Text('—')] : linhas,
                   ),
                 ),
               ],
@@ -291,7 +283,8 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
                     ? 'SEM ANYDESK'
                     : 'ANYDESK: ${LabelPrintService.formatarAnydesk(anydesk)}',
                 style: const TextStyle(
-                  fontWeight: FontWeight.w800, fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
                   color: GlpiTheme.glpiTextPrimary,
                 ),
               ),
@@ -302,7 +295,8 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
             child: Text(
               'Pré-visualização · ${_config.larguraMm}×${_config.alturaMm} mm',
               style: const TextStyle(
-                fontSize: 11, color: GlpiTheme.glpiTextDisabled,
+                fontSize: 11,
+                color: GlpiTheme.glpiTextDisabled,
               ),
             ),
           ),
@@ -318,9 +312,12 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         text: TextSpan(
-          style: const TextStyle(fontSize: 12, color: GlpiTheme.glpiTextPrimary),
+          style:
+              const TextStyle(fontSize: 12, color: GlpiTheme.glpiTextPrimary),
           children: [
-            TextSpan(text: rotulo, style: const TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(
+                text: rotulo,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             TextSpan(text: ' ${valor.trim().isEmpty ? '—' : valor}'),
           ],
         ),
@@ -332,9 +329,12 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
     return GlpiCard(
       child: Row(
         children: [
-          const Icon(Icons.copy_all_rounded, color: GlpiTheme.glpiPrimary, size: 20),
+          const Icon(Icons.copy_all_rounded,
+              color: GlpiTheme.glpiPrimary, size: 20),
           const SizedBox(width: 10),
-          const Expanded(child: Text('Cópias por etiqueta', style: TextStyle(fontSize: 14))),
+          const Expanded(
+              child:
+                  Text('Cópias por etiqueta', style: TextStyle(fontSize: 14))),
           IconButton(
             icon: const Icon(Icons.remove_circle_outline_rounded),
             color: GlpiTheme.glpiPrimary,
@@ -365,19 +365,25 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.bluetooth_rounded, color: GlpiTheme.glpiPrimary, size: 20),
+              const Icon(Icons.bluetooth_rounded,
+                  color: GlpiTheme.glpiPrimary, size: 20),
               const SizedBox(width: 10),
               const Expanded(
-                child: Text('Impressora Bluetooth', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                child: Text('Impressora Bluetooth',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               ),
               if (_conectada)
-                const _ChipStatus(texto: 'Conectada', cor: GlpiTheme.glpiSuccess)
+                const _ChipStatus(
+                    texto: 'Conectada', cor: GlpiTheme.glpiSuccess)
               else
-                const _ChipStatus(texto: 'Desconectada', cor: GlpiTheme.glpiTextSecondary),
+                const _ChipStatus(
+                    texto: 'Desconectada', cor: GlpiTheme.glpiTextSecondary),
               IconButton(
                 icon: _carregandoImpressoras
                     ? const SizedBox(
-                        height: 18, width: 18,
+                        height: 18,
+                        width: 18,
                         child: CircularProgressIndicator(strokeWidth: 2.2),
                       )
                     : const Icon(Icons.refresh_rounded),
@@ -390,12 +396,13 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
           if (_impressoras.isEmpty)
             const Text(
               'Nenhuma impressora pareada. Pareie a impressora pelo Bluetooth do Android e toque em atualizar.',
-              style: TextStyle(fontSize: 12, color: GlpiTheme.glpiTextSecondary),
+              style:
+                  TextStyle(fontSize: 12, color: GlpiTheme.glpiTextSecondary),
             )
           else
             DropdownButtonFormField<BluetoothDevice>(
               initialValue: _selecionada,
-              isExpanded:   true,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Selecione a impressora',
                 prefixIcon: Icon(Icons.print_outlined),
@@ -404,14 +411,16 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
                   .map((d) => DropdownMenuItem(
                         value: d,
                         child: Text(
-                          d.name?.isNotEmpty == true ? d.name! : (d.address ?? 'Impressora'),
+                          d.name?.isNotEmpty == true
+                              ? d.name!
+                              : (d.address ?? 'Impressora'),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ))
                   .toList(),
               onChanged: (d) => setState(() {
                 _selecionada = d;
-                _conectada   = false;
+                _conectada = false;
               }),
             ),
         ],
@@ -422,7 +431,7 @@ class _EtiquetaPageState extends State<EtiquetaPage> {
 
 class _ChipStatus extends StatelessWidget {
   final String texto;
-  final Color  cor;
+  final Color cor;
   const _ChipStatus({required this.texto, required this.cor});
 
   @override
@@ -430,7 +439,7 @@ class _ChipStatus extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color:        cor.withAlpha(28),
+        color: cor.withAlpha(28),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

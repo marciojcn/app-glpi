@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'glpi_theme.dart';
 
-/// Spinner com mensagem opcional ao centro.
 class GlpiLoadingSpinner extends StatelessWidget {
   final String? mensagem;
 
@@ -15,14 +14,17 @@ class GlpiLoadingSpinner extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(
-            width: 36, height: 36,
-            child: CircularProgressIndicator(strokeWidth: 3, color: GlpiTheme.glpiPrimary),
+            width: 36,
+            height: 36,
+            child: CircularProgressIndicator(
+                strokeWidth: 3, color: GlpiTheme.glpiPrimary),
           ),
           if (mensagem != null) ...[
             const SizedBox(height: 14),
             Text(
               mensagem!,
-              style: const TextStyle(color: GlpiTheme.glpiTextSecondary, fontSize: 13),
+              style: const TextStyle(
+                  color: GlpiTheme.glpiTextSecondary, fontSize: 13),
             ),
           ],
         ],
@@ -31,7 +33,6 @@ class GlpiLoadingSpinner extends StatelessWidget {
   }
 }
 
-/// Barra fina de loading horizontal.
 class GlpiLinearLoading extends StatelessWidget {
   const GlpiLinearLoading({super.key});
 
@@ -40,17 +41,14 @@ class GlpiLinearLoading extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: const LinearProgressIndicator(
-        minHeight:       4,
+        minHeight: 4,
         backgroundColor: GlpiTheme.glpiBorderLight,
-        valueColor:      AlwaysStoppedAnimation(GlpiTheme.glpiPrimary),
+        valueColor: AlwaysStoppedAnimation(GlpiTheme.glpiPrimary),
       ),
     );
   }
 }
 
-// ─── Skeletons ────────────────────────────────────────────────────────────
-
-/// Card "fantasma" com pulse de opacidade — usado no loading inicial.
 class GlpiSkeletonCard extends StatefulWidget {
   final double height;
   const GlpiSkeletonCard({super.key, this.height = 78});
@@ -67,7 +65,7 @@ class _GlpiSkeletonCardState extends State<GlpiSkeletonCard>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-      vsync:    this,
+      vsync: this,
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
   }
@@ -83,14 +81,14 @@ class _GlpiSkeletonCardState extends State<GlpiSkeletonCard>
     return AnimatedBuilder(
       animation: _ctrl,
       builder: (_, __) {
-        final t = 0.3 + 0.4 * _ctrl.value; // 0.3 ↔ 0.7
+        final t = 0.3 + 0.4 * _ctrl.value;
         return Opacity(
           opacity: t,
           child: Container(
             height: widget.height,
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color:        GlpiTheme.glpiBorderLight,
+              color: GlpiTheme.glpiBorderLight,
               borderRadius: BorderRadius.circular(GlpiTheme.borderRadius),
             ),
           ),
@@ -100,22 +98,21 @@ class _GlpiSkeletonCardState extends State<GlpiSkeletonCard>
   }
 }
 
-/// Lista de N skeleton cards. Use no loading inicial de listas.
 class GlpiSkeletonList extends StatelessWidget {
-  final int  quantidade;
+  final int quantidade;
   final bool expandir;
 
   const GlpiSkeletonList({
     super.key,
     this.quantidade = 6,
-    this.expandir   = true,
+    this.expandir = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final lista = ListView.builder(
-      padding:     const EdgeInsets.all(16),
-      itemCount:   quantidade,
+      padding: const EdgeInsets.all(16),
+      itemCount: quantidade,
       itemBuilder: (_, __) => const GlpiSkeletonCard(),
     );
     return expandir ? lista : SizedBox(height: 360, child: lista);

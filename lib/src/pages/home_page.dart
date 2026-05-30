@@ -8,19 +8,17 @@ import 'inventory/asset_list_page.dart';
 import 'login_page.dart';
 import 'settings_page.dart';
 
-/// Tela inicial após o login: dois inventários disponíveis nesta versão —
-/// computadores e celulares.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   Future<void> _sair(BuildContext context) async {
     final ok = await GlpiDialog.confirmar(
       context,
-      titulo:         'Sair',
-      mensagem:       'Deseja encerrar a sessão?',
+      titulo: 'Sair',
+      mensagem: 'Deseja encerrar a sessão?',
       labelConfirmar: 'SAIR',
-      destrutivo:     true,
-      icone:          Icons.logout_rounded,
+      destrutivo: true,
+      icone: Icons.logout_rounded,
     );
     if (!ok || !context.mounted) return;
     AuthService.instance.logout();
@@ -44,14 +42,14 @@ class HomePage extends StatelessWidget {
         title: const Text('GLPI Inventário'),
         actions: [
           IconButton(
-            icon:     const Icon(Icons.settings_outlined),
-            tooltip:  'Configurações',
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Configurações',
             onPressed: () =>
                 Navigator.push(context, transicaoPadrao(const SettingsPage())),
           ),
           IconButton(
-            icon:     const Icon(Icons.logout_rounded),
-            tooltip:  'Sair',
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Sair',
             onPressed: () => _sair(context),
           ),
         ],
@@ -67,24 +65,27 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 4),
             const Text(
               'Selecione um inventário para consultar e imprimir etiquetas.',
-              style: TextStyle(fontSize: 13, color: GlpiTheme.glpiTextSecondary),
+              style:
+                  TextStyle(fontSize: 13, color: GlpiTheme.glpiTextSecondary),
             ),
             const SizedBox(height: 20),
             _CardInventario(
-              titulo:   'Computadores',
-              subtitulo:'Desktops e notebooks',
-              icone:    Icons.computer_rounded,
-              onTap:    () => _abrir(context, AssetTipo.computador),
+              titulo: 'Computadores',
+              subtitulo: 'Desktops e notebooks',
+              icone: Icons.computer_rounded,
+              onTap: () => _abrir(context, AssetTipo.computador),
             ),
             const SizedBox(height: 12),
             _CardInventario(
-              titulo:    'Celulares',
+              titulo: 'Celulares',
               subtitulo: 'Smartphones corporativos',
-              icone:     Icons.smartphone_rounded,
-              onTap:     () => _abrir(context, AssetTipo.celular),
+              icone: Icons.smartphone_rounded,
+              onTap: () => _abrir(context, AssetTipo.celular),
             ),
             const SizedBox(height: 40),
-            const Center(child: UnifeobLogo(height: 28, cor: GlpiTheme.glpiTextDisabled)),
+            const Center(
+                child:
+                    UnifeobLogo(height: 28, cor: GlpiTheme.glpiTextDisabled)),
           ],
         ),
       ),
@@ -92,11 +93,10 @@ class HomePage extends StatelessWidget {
   }
 }
 
-/// Card grande e tocável de um inventário na home.
 class _CardInventario extends StatelessWidget {
-  final String       titulo;
-  final String       subtitulo;
-  final IconData     icone;
+  final String titulo;
+  final String subtitulo;
+  final IconData icone;
   final VoidCallback onTap;
 
   const _CardInventario({
@@ -115,7 +115,7 @@ class _CardInventario extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color:        GlpiTheme.glpiPrimary.withAlpha(28),
+              color: GlpiTheme.glpiPrimary.withAlpha(28),
               borderRadius: BorderRadius.circular(GlpiTheme.borderRadius),
             ),
             child: Icon(icone, color: GlpiTheme.glpiPrimary, size: 30),
@@ -128,7 +128,8 @@ class _CardInventario extends StatelessWidget {
                 Text(
                   titulo,
                   style: const TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
                     color: GlpiTheme.glpiTextPrimary,
                   ),
                 ),
@@ -136,13 +137,15 @@ class _CardInventario extends StatelessWidget {
                 Text(
                   subtitulo,
                   style: const TextStyle(
-                    fontSize: 13, color: GlpiTheme.glpiTextSecondary,
+                    fontSize: 13,
+                    color: GlpiTheme.glpiTextSecondary,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: GlpiTheme.glpiTextSecondary),
+          const Icon(Icons.chevron_right_rounded,
+              color: GlpiTheme.glpiTextSecondary),
         ],
       ),
     );
